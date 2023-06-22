@@ -5,7 +5,7 @@ range_doppler_features = np.load("data/umbc_indoor.npz", allow_pickle=True)
 
 x_data, y_data = range_doppler_features['out_x'], range_doppler_features['out_y']
 
-matrix = x_data[0]
+matrix = x_data[0] # read first data sample
 
 configParameters = {'numDopplerBins': 16, 'numRangeBins': 256, 'rangeResolutionMeters': 0.146484375,
                     'rangeIdxToMeters': 0.146484375, 'dopplerResolutionMps': 0.1252347734553042, 'maxRange': 33.75,
@@ -34,8 +34,8 @@ max_sum_of_squares = []
 ratios = []
 
 for i in range(num_sections):
-    section = masked_matrix[i * section_length : (i + 1) * section_length, :]
-    section_sum_of_squares = np.sum(section**2)
+    section = masked_matrix[i * section_length: (i + 1) * section_length, :]
+    section_sum_of_squares = np.sum(section ** 2)
     max_sum_of_squares.append(section_sum_of_squares)
     section_mean = np.mean(section)
     ratio = section_sum_of_squares / section_mean
