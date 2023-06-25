@@ -1,6 +1,6 @@
 # radar-range-doppler-thresholding
-# generate readme and code structure of this directory
-# Structure:
+
+## Structure:
 Configfile:
     Keep config file .ini and configure according to your requirement
 data:
