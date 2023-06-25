@@ -1,9 +1,13 @@
 import numpy as np
 import os
 import time
-from config_reader import ConfigFileLoader
-from control_plotter import ContorPlotter
-
+from utils.config_reader import ConfigFileLoader
+from utils.contour_plotter import ContorPlotter
+from utils.utils import increment_path
+from utils.csv_handler import CSVHandler
+from pathlib import Path
+File = Path(__file__).resolve()
+ROOT = File.parents[1] 
 
 class Algorithm:
     def __init__(self, config_file_path: str=None) -> None:
@@ -18,7 +22,10 @@ class Algorithm:
         self.x_t1 = self.config_obj.x_t1 # threshold 3
         self.threshold = self.config_obj.threshold # threshold
         self.plot_parameters = self.config_obj.plot_parameters # plot parameters
-        self.save_parameters = self.config_obj.save_parameters # save parameters
+        self.csv_parameters = self.config_obj.csv_parameters # csv parameters
+        self.Project = self.config_obj.save_dir # save parameters
+        self.save_dir = increment_path(Path(self.Project) / 'runs', exist_ok=False, mkdir=True)  # increment run
+        print("new path: ", self.save_dir)
 
         self.x_axis = None # rangeArray
         self.y_axis = None # dopplerArray
@@ -41,15 +48,10 @@ class Algorithm:
         self.load_data()
         self.axis_generation()
         self.index_threshold()
-        # print("enable_contor_plot: ", self.enable_contor_plot)
-        # print("plot_parameters: ", self.plot_parameters)
-        # print(self.plot_parameters['enable_plot'])
-        # if self.plot_parameters['enable_plot']:
-        #     print("Plotting enabled")
-        # else:
-        #     print("Plotting disabled")
         if self.plot_parameters['enable_plot']:
             self.init_contor_plot()
+        if self.csv_parameters['enable_csv']:
+            self.init_csv_writer()
             # self.add_rect()
 
     # load data from dataset
@@ -78,6 +80,10 @@ class Algorithm:
     def update_contor_plot(self, z):
         # print("Updating contor plot")
         self.contor_plotter.update_contor_plot(z)
+    
+    def init_csv_writer(self):
+        self.csv_writer = CSVHandler(path=self.save_dir, csv_file_name=self.csv_parameters['csv_filename'])
+        self.csv_writer.init_csv_writer()
     
     def index_threshold(self):
         self.x_start_index = np.argwhere(self.x_axis > (self.x_t1 * self.x_axis.max()))[0][0]
@@ -132,16 +138,17 @@ class Algorithm:
                     if self.plot_parameters['add_text_rect']:
                         self.add_rect()
                         self.contor_plotter.update_text("Decision: " + str(self.decision) + "\nRatio: " + str(round(max_ratio,2))+"\nThreshold: "+str(self.threshold))
-                    if self.save_parameters['save_plot']:
-                        self.contor_plotter.save_plot(self.save_parameters['save_dir'], file_name)
-                else:
-                    print("Decision: ", self.decision)
+                    if self.plot_parameters['save_plot']:
+                        self.contor_plotter.save_plot(self.save_dir, file_name)
+                if self.csv_parameters['enable_csv']:
+                    self.csv_writer.write_csv_row([max_ratio]) # write to csv file 
+                print("Decision: ", self.decision)
                 time.sleep(0.01)
             except KeyboardInterrupt:
                 print("Terminated by user.... Bye")
                 break
 
 if __name__ == "__main__":
-    algorithm = Algorithm(config_file_path="config.ini")
+    algorithm = Algorithm(config_file_path="configfile/config_outdoor.ini")
     algorithm.run()
     

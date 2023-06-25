@@ -24,9 +24,6 @@ class ConfigFileLoader:
     # extract config parameters
     def extract_config_parameters(self):
         self.configParameters = {}
-        # for key in self.config_obj['config_parameters']:
-        #     self.configParameters[key] = self.config_obj['config_parameters'][key]
-
         self.configParameters = {'numDopplerBins': int(self.config_obj['config_parameters']['numDopplerBins']),
                                  'numRangeBins': int(self.config_obj['config_parameters']['numRangeBins']),
                                  'rangeResolutionMeters': float(self.config_obj['config_parameters']['rangeResolutionMeters']),
@@ -51,10 +48,18 @@ class ConfigFileLoader:
         for key in self.config_obj['plot_parameters']:
             self.plot_parameters[key] = eval(self.config_obj['plot_parameters'][key])
     
-    def extract_save_parameters(self):
-        self.save_parameters = {}
-        self.save_parameters["save_plot"] = eval(self.config_obj['save_parameters']["save_plot"])
-        self.save_parameters["save_dir"] = self.config_obj['save_parameters']["save_dir"]
+    # def extract_save_parameters(self):
+    #     self.save_parameters = {}
+    #     self.save_parameters["save_plot"] = eval(self.config_obj['save_parameters']["save_plot"])
+    #     self.save_parameters["save_dir"] = self.config_obj['save_parameters']["save_dir"]
+    
+    def extract_csv_parameters(self):
+        self.csv_parameters = {}
+        self.csv_parameters["enable_csv"] = eval(self.config_obj['csv_parameters']["enable_csv"])
+        self.csv_parameters["csv_filename"] = self.config_obj['csv_parameters']["csv_filename"]
+
+    def extract_extra_parameters(self):
+        self.save_dir = self.config_obj['save_dir']["save_dir"]
 
     # extract all parameters
     def extract_parameters(self):
@@ -62,10 +67,11 @@ class ConfigFileLoader:
         self.extract_dataset_parameters()
         self.extract_threshold_parameters()
         self.extract_plot_parameters()
-        self.extract_save_parameters()
+        self.extract_extra_parameters()
+        self.extract_csv_parameters()
         print("Config parameters: ", self.configParameters)
         print("Dataset path: ", self.dataset_path)
         print("Thresholds: ", self.y_t1, self.y_t2, self.x_t1)
         print("Threshold: ", self.threshold)
         print("Plot parameters: ", self.plot_parameters)
-        print("Save parameters: ", self.save_parameters)
+        print("Save dir: ", self.save_dir)
