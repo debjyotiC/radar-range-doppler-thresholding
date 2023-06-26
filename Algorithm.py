@@ -6,6 +6,7 @@ from utils.contour_plotter import ContorPlotter
 from utils.utils import increment_path
 from utils.csv_handler import CSVHandler
 from pathlib import Path
+from utils.general import *
 File = Path(__file__).resolve()
 ROOT = File.parents[1] 
 
@@ -61,6 +62,7 @@ class Algorithm:
         self.range_doppler_features = np.load(
             self.dataset_path, allow_pickle=True)
         self.data = self.range_doppler_features['out_x']
+        self.data_y = self.range_doppler_features['out_y']
 
     # generate range and doppler axis
     def axis_generation(self):
@@ -111,6 +113,8 @@ class Algorithm:
     def operation(self, matrix):
         self.result['t'] = np.zeros(self.num_sections)
         self.result['b'] = np.zeros(self.num_sections)
+        for i in range(matrix.shape[0]):
+            matrix[i,:] = convolution_1d(matrix[i,:], n=10, mode='same')
 
         for i in range(self.num_sections):
             temp_t = matrix[self.y_t_start_index:self.y_t_last_index, self.x_start_index + i * self.section_length: self.x_start_index + (i + 1) * self.section_length]
@@ -128,7 +132,7 @@ class Algorithm:
         return max(max(self.result['t']), max(self.result['b']))
     
     def run(self):
-        for file_name, i in enumerate(self.data):
+        for index, i in enumerate(self.data):
             try:
                 self.operation(i)
                 max_ratio = self.max_ratio()
@@ -139,7 +143,7 @@ class Algorithm:
                         self.add_rect()
                         self.contor_plotter.update_text("Decision: " + str(self.decision) + "\nRatio: " + str(round(max_ratio,2))+"\nThreshold: "+str(self.threshold))
                     if self.plot_parameters['save_plot']:
-                        self.contor_plotter.save_plot(self.save_dir, file_name)
+                        self.contor_plotter.save_plot(self.save_dir, index)
                 if self.csv_parameters['enable_csv']:
                     self.csv_writer.write_csv_row([max_ratio]) # write to csv file 
                 print("Decision: ", self.decision)
